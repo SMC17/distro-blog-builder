@@ -82,4 +82,16 @@ now pull this repo as a git submodule.
 License
 -------
 
-AGPL-3.0-or-later. See `LICENSE`.
+Apache-2.0. See `LICENSE`.
+
+Content-calendar dates
+----------------------
+
+The publish gate compares YYYY-MM-DD calendar days. A post dated
+2026-11-12T00:00:00Z publishes on 2026-11-12; its time suffix no longer makes
+it look like tomorrow. Future days stay out of the public build; drafts retain their existing
+unlisted-URL behavior. --preview
+keeps future output under public/preview/. BLOG_TODAY provides a deterministic
+day override. Supply UTC dates: the calendar ignores timestamp time/offset
+suffixes and is not an instant-level scheduler. The CLI's library date gate
+is covered by zig build test; tools/check_calendar.py checks the actual output.

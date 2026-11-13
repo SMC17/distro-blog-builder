@@ -18,6 +18,14 @@ test {
     _ = sandbox;
 }
 
+/// Apply a day-granularity content calendar. ISO timestamps use their stated
+/// YYYY-MM-DD day; publication time/offset conversion is not performed.
+/// Short dates preserve the legacy present-day behavior.
+pub fn isFutureDate(date: []const u8, today: []const u8) bool {
+    if (date.len < 10 or today.len < 10) return false;
+    return std.mem.order(u8, date[0..10], today[0..10]) == .gt;
+}
+
 // ---------------------------------------------------------------- types
 
 pub const Frontmatter = struct {
@@ -2664,8 +2672,8 @@ pub fn renderSubstrateIndex(alloc: Allocator, entries: []const Post, site_url: [
                 \\                </li>
                 \\
             , .{
-                p.slug,    t,         status_class, status_esc,
-                summary_esc, tag_esc, date_esc,     tests_esc,
+                p.slug,      t,           status_class, status_esc,
+                summary_esc, tag_esc,     date_esc,     tests_esc,
                 license_esc, forgejo_esc,
             });
             defer alloc.free(card);
@@ -2750,8 +2758,8 @@ pub fn renderSubstrateEntry(alloc: Allocator, p: Post, site_url: []const u8) ![]
         \\        <article class="substrate-entry-body">
         \\
     , .{
-        t,            t,         status_class, status_esc,
-        tag_esc,      date_esc,  license_esc,  tests_esc,
+        t,        t,        status_class, status_esc,
+        tag_esc,  date_esc, license_esc,  tests_esc,
         lane_esc,
     });
     defer alloc.free(head_block);
@@ -3191,4 +3199,17 @@ test "strip tags" {
     const out = try stripTags(a, "<p>hello <b>world</b> &amp; cheese</p>");
     defer a.free(out);
     try std.testing.expectEqualStrings("hello world & cheese", out);
+}
+
+test "calendar accepts same-day ISO timestamps and holds tomorrow" {
+    const today = "2026-11-12";
+    for ([_][]const u8{ "2026-11-11", "2026-11-12", "2026-11-12T00:00:00Z", "2026-11-12T23:59:59Z" }) |date| {
+        try std.testing.expect(!isFutureDate(date, today));
+    }
+    for ([_][]const u8{ "2026-11-13", "2026-11-13T00:00:00Z", "2027-01-01" }) |date| {
+        try std.testing.expect(isFutureDate(date, today));
+    }
+    try std.testing.expect(!isFutureDate("2026-11-13T00:00:00Z", "2026-11-13"));
+    try std.testing.expect(!isFutureDate("", today));
+    try std.testing.expect(!isFutureDate("short", today));
 }

@@ -74,15 +74,6 @@ fn resolveToday(alloc: Allocator, env: *std.process.Environ.Map, io: Io) ![]cons
     });
 }
 
-// True when `date` is strictly after `today`. Both must be ISO YYYY-MM-DD;
-// in that format byte-wise compare matches calendar order. Posts with an
-// empty/malformed date string are treated as present-day (not future) so
-// the existing journal flow keeps working.
-fn isFutureDate(date: []const u8, today: []const u8) bool {
-    if (date.len < 10) return false;
-    return std.mem.order(u8, date, today) == .gt;
-}
-
 fn printHelp() void {
     const msg =
         \\blog-build — render ~/blog
@@ -279,7 +270,7 @@ pub fn main(init: std.process.Init) !void {
         // `--preview` bypasses this gate and writes the future-dated post to
         // public/preview/ instead, letting the author verify rendering, OG
         // image, and voice before the public release date.
-        if (!args.preview and isFutureDate(fp.fm.date, today)) {
+        if (!args.preview and lib.isFutureDate(fp.fm.date, today)) {
             future_skipped += 1;
             std.debug.print("future-skip {s} ({s} > {s})\n", .{ entry.name, fp.fm.date, today });
             continue;
