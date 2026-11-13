@@ -3,7 +3,7 @@
 Thanks for your interest in contributing!
 
 ## Prerequisites
-- [Zig](https://ziglang.org/download/) 0.14.0+
+- [Zig](https://ziglang.org/download/) 0.16.0
 - `git`
 
 ## Build & Test
