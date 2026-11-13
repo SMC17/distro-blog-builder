@@ -10,13 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        zig-version: [0.14.0]
+        zig-version: [0.16.0]
     steps:
       - uses: actions/checkout@v4
-      - uses: mlugg/setup-zig@v1
+      - uses: mlugg/setup-zig@v2
         with:
           version: ${{ matrix.zig-version }}
       - name: Build
         run: zig build
       - name: Test
         run: zig build test --summary all
+      - name: Calendar publication contract
+        run: python3 tools/check_calendar.py
